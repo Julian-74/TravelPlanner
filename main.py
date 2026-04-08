@@ -1,42 +1,47 @@
-"""CLI entry point: build and print a trip itinerary."""
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_wtf import FlaskForm
+from wtforms import StringField, DateField, FloatField, SubmitField
+from wtforms.validators import DataRequired, NumberRange
+from models import TripPlanner
+from config import Config
+import os
 
-from __future__ import annotations
+app = Flask(__name__)
+app.config.from_object(Config)
 
-import sqlite3
-import sys
+# Check config on startup
+Config.check_config()
 
-from app_logic import (
-    build_itinerary_from_inputs,
-    format_itinerary_text,
-    initialize_database,
-)
+class TripForm(FlaskForm):
+    origin = StringField('From', validators=[DataRequired()])
+    destination = StringField('To', validators=[DataRequired()])
+    dates = StringField('Dates (YYYY-MM-DD to YYYY-MM-DD)', validators=[DataRequired()])
+    budget = FloatField('Budget ($)', validators=[DataRequired(), NumberRange(min=0)])
+    submit = SubmitField('Plan My Trip')
 
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    form = TripForm()
+    if form.validate_on_submit():
+        try:
+            planner = TripPlanner(
+                origin=form.origin.data,
+                destination=form.destination.data,
+                dates=form.dates.data,
+                budget=form.budget.data
+            )
+            itinerary = planner.generate_itinerary()
+            return render_template('itinerary.html', 
+                                 itinerary=itinerary, 
+                                 form=form)
+        except Exception as e:
+            flash(f'Planning failed: {str(e)}', 'error')
+            return render_template('index.html', form=form)
+    return render_template('index.html', form=form)
 
-def main() -> None:
-    print("Travel Planner - itinerary builder\n")
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
-    print("Initializing database (create table and sample data if needed)...")
-    try:
-        initialize_database()
-    except sqlite3.Error as exc:
-        print(f"Error: could not initialize database: {exc}", file=sys.stderr)
-        sys.exit(1)
-
-    print("Database ready.\n")
-
-    cities_raw = input("Cities (comma-separated): ").strip()
-    budget_raw = input("Budget (EGP): ").strip()
-    days_raw = input("Number of days: ").strip()
-
-    itinerary, err = build_itinerary_from_inputs(cities_raw, budget_raw, days_raw)
-    if err:
-        print(f"Error: {err}", file=sys.stderr)
-        sys.exit(1)
-
-    assert itinerary is not None
-    print()
-    print(format_itinerary_text(itinerary))
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(debug=True)

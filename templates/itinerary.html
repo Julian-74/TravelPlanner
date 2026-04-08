@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ itinerary.destination }} Itinerary</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h1>✈️ {{ itinerary.destination }} Trip Plan</h1>
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5>📍 From: {{ itinerary.origin }}</h5>
+                                <h5>📅 Dates: {{ itinerary.dates }}</h5>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <h4>💰 Budget: {{ itinerary.budget }}</h4>
+                                <h5>📏 Distance: {{ itinerary.distance }}</h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>✈️ Flights</h4>
+                                <p class="lead">{{ itinerary.flight_cost }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>💵 Daily Budget</h4>
+                                <p class="lead">{{ itinerary.daily_budget }}</p>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <h3>🎯 Top Activities</h3>
+                        <ul class="list-group list-group-flush">
+                            {% for activity in itinerary.activities %}
+                                <li class="list-group-item">{{ activity }}</li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="text-center mt-5">
+                            <a href="/" class="btn btn-primary btn-lg">Plan Another Trip</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
